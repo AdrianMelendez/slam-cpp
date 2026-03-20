@@ -1,8 +1,14 @@
 add_rules("mode.debug", "mode.release")
 
+add_requires("opencv", "spdlog")
+
 target("slam-cpp")
     set_kind("binary")
-    add_files("src/*.cpp")
+    set_languages("cxx17")
+    add_files("src/**.cpp")
+    add_includedirs("src")
+    add_packages("opencv", "spdlog")
+    add_syslinks("avif")
 
 --
 -- If you want to known more usage about xmake, please see https://xmake.io
@@ -72,4 +78,3 @@ target("slam-cpp")
 --
 -- @endcode
 --
-
