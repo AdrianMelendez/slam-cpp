@@ -1,6 +1,9 @@
 #include <iostream>
 #include <opencv2/highgui.hpp>
+#include "frontend/feature_detector.hpp"
 #include "io/tum_loader.hpp"
+#include "opencv2/core/types.hpp"
+#include "opencv2/features2d.hpp"
 #include "utils/logger.hpp"
 
 int main(int argc, char** argv) {
@@ -18,14 +21,11 @@ int main(int argc, char** argv) {
 
     while (loader.has_next()) {
             Frame f = loader.next();
-
             cv::imshow("TUM Sequence", f.image);
-
             // wait 33ms between frames (~30fps), quit if 'q' is pressed
-            if (cv::waitKey(100) == 'q') break;
+            if (cv::waitKey(50) == 'q') break;
         }
 
-        cv::destroyAllWindows();
-
+    cv::destroyAllWindows();
     return 0;
 }

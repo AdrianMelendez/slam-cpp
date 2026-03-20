@@ -4,13 +4,26 @@ add_rules("plugin.compile_commands.autoupdate", {outputdir = "."})
 add_requires("opencv", {system=true})
 add_requires("spdlog")
 
-target("slam-cpp")
+-- shared sources (everything except main files)
+local shared_src = {
+    "src/io/tum_loader.cpp",
+    "src/frontend/feature_detector.cpp"
+}
+
+target("image_viewer")
     set_kind("binary")
     set_languages("cxx17")
-    add_files("src/**.cpp")
+    add_files("src/apps/image_viewer.cpp", table.unpack(shared_src))
     add_includedirs("src")
     add_packages("opencv", "spdlog")
-    -- add_syslinks("avif")
+
+target("feature_viewer")
+    set_kind("binary")
+    set_languages("cxx17")
+    add_files("src/apps/feature_viewer.cpp", table.unpack(shared_src))
+    add_includedirs("src")
+    add_packages("opencv", "spdlog")
+
 
 --
 -- If you want to known more usage about xmake, please see https://xmake.io
