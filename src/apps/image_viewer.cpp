@@ -10,7 +10,7 @@ int main(int argc, char** argv) {
     init_logger();
 
     if (argc < 2) {
-        spdlog::error("Usage: slam_cpp <path/to/tum/sequence>");
+        spdlog::error("Usage: image_viewer <path/to/tum/sequence>");
         return 1;
     }
 

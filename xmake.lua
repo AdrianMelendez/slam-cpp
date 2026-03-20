@@ -7,7 +7,8 @@ add_requires("spdlog")
 -- shared sources (everything except main files)
 local shared_src = {
     "src/io/tum_loader.cpp",
-    "src/frontend/feature_detector.cpp"
+    "src/frontend/feature_detector.cpp",
+    "src/frontend/feature_matcher.cpp"
 }
 
 target("image_viewer")
@@ -24,6 +25,12 @@ target("feature_viewer")
     add_includedirs("src")
     add_packages("opencv", "spdlog")
 
+target("feature_matcher")
+    set_kind("binary")
+    set_languages("cxx17")
+    add_files("src/apps/feature_matcher.cpp", table.unpack(shared_src))
+    add_includedirs("src")
+    add_packages("opencv", "spdlog")
 
 --
 -- If you want to known more usage about xmake, please see https://xmake.io
