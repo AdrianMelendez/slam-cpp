@@ -9,7 +9,7 @@ using the TUM RGB-D dataset for evaluation.
 - [x] Phase 1 — Visual Odometry
   - [x] TUM RGB-D dataset loader
   - [x] ORB feature detection
-  - [ ] Feature matching
+  - [x] Feature matching
   - [ ] Pose estimation
 - [ ] Phase 2 — Mapping
 - [ ] Phase 3 — Loop closure
@@ -56,6 +56,9 @@ xmake run image_viewer $(pwd)/data/rgbd_dataset_freiburg1_xyz
 
 # play sequence with ORB feature detection overlay
 xmake run feature_viewer $(pwd)/data/rgbd_dataset_freiburg1_xyz
+
+# play sequence feature matching from one frame to the next
+xmake run feature_matcher $(pwd)/data/rgbd_dataset_freiburg1_xyz
 ```
 
 Press `q` to quit either viewer.
@@ -64,8 +67,9 @@ Press `q` to quit either viewer.
 ```
 src/
 ├── apps/
-│   ├── image_viewer.cpp            # raw image sequence player
+│   ├── image_viewer.cpp      # raw image sequence player
 │   └── feature_viewer.cpp    # ORB feature detection viewer
+│   └── feature_matcher.cpp   # feature matcher
 ├── frontend/
 │   ├── feature_detector      # ORB keypoint and descriptor extraction
 │   ├── feature_matcher       # descriptor matching between frames (WIP)
