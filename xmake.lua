@@ -1,7 +1,8 @@
 add_rules("mode.debug", "mode.release")
 add_rules("plugin.compile_commands.autoupdate", {outputdir = "."})
 
-add_requires("opencv", "spdlog")
+add_requires("opencv", {system=true})
+add_requires("spdlog")
 
 target("slam-cpp")
     set_kind("binary")
@@ -9,7 +10,7 @@ target("slam-cpp")
     add_files("src/**.cpp")
     add_includedirs("src")
     add_packages("opencv", "spdlog")
-    add_syslinks("avif")
+    -- add_syslinks("avif")
 
 --
 -- If you want to known more usage about xmake, please see https://xmake.io

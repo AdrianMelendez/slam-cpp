@@ -1,4 +1,5 @@
 #include <iostream>
+#include <opencv2/highgui.hpp>
 #include "io/tum_loader.hpp"
 #include "utils/logger.hpp"
 
@@ -6,7 +7,7 @@ int main(int argc, char** argv) {
     init_logger();
 
     if (argc < 2) {
-        spdlog::error("Usage: slam_vo <path/to/tum/sequence>");
+        spdlog::error("Usage: slam_cpp <path/to/tum/sequence>");
         return 1;
     }
 
@@ -15,9 +16,16 @@ int main(int argc, char** argv) {
 
     spdlog::info("Dataset ready: {} frames", loader.size());
 
-    Frame f = loader.next();
-    spdlog::info("First frame — id: {}  ts: {:.6f}  size: {}x{}",
-                 f.id, f.timestamp, f.image.cols, f.image.rows);
+    while (loader.has_next()) {
+            Frame f = loader.next();
+
+            cv::imshow("TUM Sequence", f.image);
+
+            // wait 33ms between frames (~30fps), quit if 'q' is pressed
+            if (cv::waitKey(100) == 'q') break;
+        }
+
+        cv::destroyAllWindows();
 
     return 0;
 }
