@@ -1,55 +1,54 @@
 #include "io/tum_loader.hpp"
-#include <spdlog/spdlog.h>
 #include <fstream>
-#include <opencv2/imgcodecs.hpp>   // cv::imread, cv::IMREAD_COLOR
-#include <opencv2/imgproc.hpp>     // cv::cvtColor, cv::COLOR_BGR2GRAY
+#include <opencv2/imgcodecs.hpp> // cv::imread, cv::IMREAD_COLOR
+#include <opencv2/imgproc.hpp>   // cv::cvtColor, cv::COLOR_BGR2GRAY
+#include <spdlog/spdlog.h>
 
-TUMLoader::TUMLoader(const std::string& sequence_path) : sequence_path_(sequence_path) {}
+TUMLoader::TUMLoader(const std::string& sequence_path)
+    : sequence_path_(sequence_path) {}
 
 bool TUMLoader::load() {
-    spdlog::debug("path: {}", sequence_path_ + "/rgb.txt");
-    std::ifstream f(sequence_path_ + "/rgb.txt");
-    if (!f.is_open()) {
-        spdlog::error("Cannot open rgb.txt at {}", sequence_path_);
-        return false;
-    }
+  spdlog::debug("path: {}", sequence_path_ + "/rgb.txt");
+  std::ifstream f(sequence_path_ + "/rgb.txt");
+  if (!f.is_open()) {
+    spdlog::error("Cannot open rgb.txt at {}", sequence_path_);
+    return false;
+  }
 
-    std::string line;
-    while (std::getline(f, line)) {
-        if (line.empty() || line[0] == '#') continue;
-        std::istringstream ss(line);
-        double ts;
-        std::string filename;
-        ss >> ts >> filename;
-        entries_.emplace_back(ts, filename);
-    }
+  std::string line;
+  while (std::getline(f, line)) {
+    if (line.empty() || line[0] == '#')
+      continue;
+    std::istringstream ss(line);
+    double ts;
+    std::string filename;
+    ss >> ts >> filename;
+    entries_.emplace_back(ts, filename);
+  }
 
-    spdlog::info("Loaded {} frames from {}", entries_.size(), sequence_path_ );
-    return !entries_.empty();
+  spdlog::info("Loaded {} frames from {}", entries_.size(), sequence_path_);
+  return !entries_.empty();
 }
 
-bool TUMLoader::has_next() const {
-    return current_idx_ < entries_.size();
-}
+bool TUMLoader::has_next() const { return current_idx_ < entries_.size(); }
 
 Frame TUMLoader::next() {
-    const auto& [ts, rel_path] = entries_[current_idx_++];
-    std::string full_path = sequence_path_ + "/" + rel_path;
+  const auto& [ts, rel_path] = entries_[current_idx_++];
+  std::string full_path = sequence_path_ + "/" + rel_path;
 
-    cv::Mat color = cv::imread(full_path, cv::IMREAD_COLOR);
-    if (color.empty()) {
-        spdlog::warn("Failed to read image: {}", full_path);
-        return Frame{ts, cv::Mat(), frame_counter_++};
-    }
+  cv::Mat color = cv::imread(full_path, cv::IMREAD_COLOR);
+  if (color.empty()) {
+    spdlog::warn("Failed to read image: {}", full_path);
+    return Frame{ts, cv::Mat(), frame_counter_++};
+  }
 
-    cv::Mat gray;
-    cv::cvtColor(color, gray, cv::COLOR_BGR2GRAY);
+  cv::Mat gray;
+  cv::cvtColor(color, gray, cv::COLOR_BGR2GRAY);
 
-    spdlog::debug("Frame {} - ts: {:.6f} size {}x{}", frame_counter_, ts, gray.cols, gray.rows);
+  spdlog::debug("Frame {} - ts: {:.6f} size {}x{}", frame_counter_, ts,
+                gray.cols, gray.rows);
 
-    return Frame{ts, gray, frame_counter_++};
+  return Frame{ts, gray, frame_counter_++};
 }
 
-size_t TUMLoader::size() const {
-    return entries_.size();
-}
+size_t TUMLoader::size() const { return entries_.size(); }

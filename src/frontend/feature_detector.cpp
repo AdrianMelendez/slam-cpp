@@ -4,13 +4,15 @@
 #include <spdlog/spdlog.h>
 
 FeatureDetector::FeatureDetector(int n_features) {
-    orb_ = cv::ORB::create(n_features);
-    spdlog::debug("FeatureDetector initialized with {} max features", n_features);
+  orb_ = cv::ORB::create(n_features);
+  spdlog::debug("FeatureDetector initialized with {} max features", n_features);
 }
 
 Features FeatureDetector::detect(const Frame& frame) {
-    Features features;
-    orb_->detectAndCompute(frame.image, cv::noArray(), features.keypoints, features.descriptors);
-    spdlog::debug("Frame {} - detected {} keypoints", frame.id, features.keypoints.size());
-    return features;
+  Features features;
+  orb_->detectAndCompute(frame.image, cv::noArray(), features.keypoints,
+                         features.descriptors);
+  spdlog::debug("Frame {} - detected {} keypoints", frame.id,
+                features.keypoints.size());
+  return features;
 }
