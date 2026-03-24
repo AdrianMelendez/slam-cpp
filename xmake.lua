@@ -8,8 +8,16 @@ add_requires("spdlog")
 local shared_src = {
     "src/io/tum_loader.cpp",
     "src/frontend/feature_detector.cpp",
-    "src/frontend/feature_matcher.cpp"
+    "src/frontend/feature_matcher.cpp",
+    "src/frontend/pose_estimator.cpp"
 }
+
+target("pose_viewer")
+    set_kind("binary")
+    set_languages("cxx17")
+    add_files("src/apps/pose_viewer.cpp", table.unpack(shared_src))
+    add_includedirs("src")
+    add_packages("opencv", "spdlog")
 
 target("image_viewer")
     set_kind("binary")
