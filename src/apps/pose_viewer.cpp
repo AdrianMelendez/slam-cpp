@@ -13,8 +13,8 @@
 namespace {
 
 constexpr int kCanvasSize = 600;
-constexpr int kScaleInitFrames = 30; // frames used to calibrate scale
-constexpr double kMinStep = 1e-4;    // ignore tiny GT steps when calibrating
+constexpr int kScaleInitFrames = 100; // frames used to calibrate scale
+constexpr double kMinStep = 1e-4;     // ignore tiny GT steps when calibrating
 constexpr float kPixelsPerMeter = 100.0f; // canvas zoom
 
 } // namespace
@@ -66,12 +66,12 @@ int main(int argc, char** argv) {
   cv::Mat t_w_c0 = cv::Mat::zeros(3, 1, CV_64F); // GT origin in world frame
   cv::Mat R_c0_w = cv::Mat::eye(3, 3, CV_64F);   // world -> camera-0 rotation
   if (has_gt) {
-    gt_idx = TUMLoader::nearest_gt(groundtruth, 0, prev_frame.timestamp);
+    gt_idx = nearest_gt(groundtruth, 0, prev_frame.timestamp);
     const auto& g0 = groundtruth[gt_idx];
     t_w_c0.at<double>(0) = g0.tx;
     t_w_c0.at<double>(1) = g0.ty;
     t_w_c0.at<double>(2) = g0.tz;
-    cv::Mat R_w_c0 = TUMLoader::quat_to_rot(g0.qx, g0.qy, g0.qz, g0.qw);
+    cv::Mat R_w_c0 = quat_to_rot(g0.qx, g0.qy, g0.qz, g0.qw);
     R_c0_w = R_w_c0.t();
   } else {
     spdlog::warn("No ground truth available - overlay disabled");
@@ -129,7 +129,7 @@ int main(int argc, char** argv) {
 
     // collect pose for output
     double qx, qy, qz, qw;
-    TUMLoader::rot_to_quat(R_total, qx, qy, qz, qw);
+    rot_to_quat(R_total, qx, qy, qz, qw);
     estimated_poses.push_back({curr_frame.timestamp, t_total.at<double>(0),
                                t_total.at<double>(1), t_total.at<double>(2), qx,
                                qy, qz, qw});
@@ -138,7 +138,7 @@ int main(int argc, char** argv) {
     cv::Vec2d gt_xz(0.0, 0.0);
     bool gt_valid = false;
     if (has_gt) {
-      gt_idx = TUMLoader::nearest_gt(groundtruth, gt_idx, curr_frame.timestamp);
+      gt_idx = nearest_gt(groundtruth, gt_idx, curr_frame.timestamp);
       const auto& g = groundtruth[gt_idx];
       cv::Mat p_w = (cv::Mat_<double>(3, 1) << g.tx - t_w_c0.at<double>(0),
                      g.ty - t_w_c0.at<double>(1), g.tz - t_w_c0.at<double>(2));
