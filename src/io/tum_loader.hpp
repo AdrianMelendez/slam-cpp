@@ -9,6 +9,12 @@ struct Frame {
   int id;
 };
 
+struct GroundTruthPose {
+  double timestamp;
+  double tx, ty, tz;     // position
+  double qx, qy, qz, qw; // orientation (quaternion)
+};
+
 class TUMLoader {
 public:
   explicit TUMLoader(const std::string& sequence_path);
@@ -24,6 +30,8 @@ public:
     double cx = 318.643040;
     double cy = 255.313989;
   } intrinsics;
+
+  std::vector<GroundTruthPose> load_groundtruth();
 
 private:
   std::string sequence_path_;

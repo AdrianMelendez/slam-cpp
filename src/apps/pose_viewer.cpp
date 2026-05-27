@@ -19,6 +19,8 @@ int main(int argc, char** argv) {
   TUMLoader loader(argv[1]);
   if (!loader.load())
     return 1;
+  auto groundtruth = loader.load_groundtruth();
+  size_t gt_idx = 0;
 
   FeatureDetector detector;
   FeatureMatcher matcher;
@@ -35,6 +37,17 @@ int main(int argc, char** argv) {
   int canvas_size = 600;
   cv::Mat canvas(canvas_size, canvas_size, CV_8UC3, cv::Scalar(30, 30, 30));
   cv::Point2i center(canvas_size / 2, canvas_size / 2);
+  // offset
+  center.x += 1.3563;
+  center.y += 1.6380;
+
+  // draw legend once before the loop
+  cv::circle(canvas, cv::Point(20, 20), 4, cv::Scalar(0, 255, 0), -1);
+  cv::putText(canvas, "estimated", cv::Point(30, 25), cv::FONT_HERSHEY_SIMPLEX,
+              0.4, cv::Scalar(0, 255, 0), 1);
+  cv::circle(canvas, cv::Point(20, 40), 4, cv::Scalar(0, 0, 255), -1);
+  cv::putText(canvas, "ground truth", cv::Point(30, 45),
+              cv::FONT_HERSHEY_SIMPLEX, 0.4, cv::Scalar(0, 0, 255), 1);
 
   while (loader.has_next()) {
     Frame curr_frame = loader.next();
@@ -42,17 +55,39 @@ int main(int argc, char** argv) {
     std::vector<Match> matches = matcher.match(prev_features, curr_features);
     Pose pose = estimator.estimate(prev_features, curr_features, matches);
 
-    // chain the poses — compose the current motion onto the total
-    t_total = t_total + R_total * pose.t;
-    R_total = pose.R * R_total;
+    // pose.R, pose.t : transform points from prev-cam into curr-cam (X_curr = R
+    // X_prev + t) We want T_wc_curr = T_wc_prev * T_prev_curr, where
+    // T_prev_curr is the camera's motion expressed in prev-cam frame = inverse
+    // of (R, t):
+    cv::Mat R_rel = pose.R.t();
+    cv::Mat t_rel = -pose.R.t() * pose.t;
+
+    t_total = t_total + R_total * t_rel;
+    R_total = R_total * R_rel;
 
     // project the 3D position onto a top-down 2D canvas (X-Z plane)
     // scale factor controls how many pixels per meter
-    float scale = 5.0f;
+    float scale = 10.0f;
     int x = center.x + static_cast<int>(t_total.at<double>(0) * scale);
-    int z = center.y - static_cast<int>(t_total.at<double>(2) * scale);
+    int z = center.y + static_cast<int>(t_total.at<double>(2) * scale);
 
+    // draw estimated pose in green
     cv::circle(canvas, cv::Point(x, z), 2, cv::Scalar(0, 255, 0), -1);
+
+    // draw groundtruth in red
+    while (gt_idx + 1 < groundtruth.size() &&
+           groundtruth[gt_idx].timestamp < curr_frame.timestamp)
+      gt_idx++;
+
+    // use a much larger scale for ground truth to make it visible
+    float gt_scale = scale;
+    if (gt_idx < groundtruth.size()) {
+      const auto& gt = groundtruth[gt_idx];
+      int gt_x = center.x + static_cast<int>(gt.tx * gt_scale);
+      int gt_z = center.y + static_cast<int>(gt.tz * gt_scale);
+      cv::circle(canvas, cv::Point(gt_x, gt_z), 2, cv::Scalar(0, 0, 255),
+                 -1); // red = ground truth
+    }
 
     // show match count and inliers on the frame
     cv::Mat display = curr_frame.image.clone();

@@ -52,3 +52,26 @@ Frame TUMLoader::next() {
 }
 
 size_t TUMLoader::size() const { return entries_.size(); }
+
+std::vector<GroundTruthPose> TUMLoader::load_groundtruth() {
+  std::vector<GroundTruthPose> poses;
+  std::ifstream f(sequence_path_ + "/groundtruth.txt");
+
+  if (!f.is_open()) {
+    spdlog::warn("No groundtruth.txt found at {}", sequence_path_);
+    return poses;
+  }
+
+  std::string line;
+  while (std::getline(f, line)) {
+    if (line.empty() || line[0] == '#')
+      continue;
+    std::istringstream ss(line);
+    GroundTruthPose p;
+    ss >> p.timestamp >> p.tx >> p.ty >> p.tz >> p.qx >> p.qy >> p.qz >> p.qw;
+    poses.push_back(p);
+  }
+
+  spdlog::info("Loaded {} ground truth poses", poses.size());
+  return poses;
+}
