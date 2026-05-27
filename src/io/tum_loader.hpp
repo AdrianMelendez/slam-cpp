@@ -32,6 +32,11 @@ public:
   } intrinsics;
 
   std::vector<GroundTruthPose> load_groundtruth();
+  static cv::Mat quat_to_rot(double qx, double qy, double qz, double qw);
+  static size_t nearest_gt(const std::vector<GroundTruthPose>& gt,
+                           size_t gt_idx, double t);
+  static void rot_to_quat(const cv::Mat& R, double& qx, double& qy, double& qz,
+                          double& qw);
 
 private:
   std::string sequence_path_;
