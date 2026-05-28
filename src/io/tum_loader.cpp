@@ -27,28 +27,72 @@ bool TUMLoader::load() {
   }
 
   spdlog::info("Loaded {} frames from {}", entries_.size(), sequence_path_);
+
+  // Load depth.txt if present and match each RGB frame to nearest depth frame
+  std::vector<std::pair<double, std::string>> depth_entries;
+  std::ifstream df(sequence_path_ + "/depth.txt");
+  if (df.is_open()) {
+    std::string dline;
+    while (std::getline(df, dline)) {
+      if (dline.empty() || dline[0] == '#')
+        continue;
+      std::istringstream ss(dline);
+      double ts;
+      std::string filename;
+      ss >> ts >> filename;
+      depth_entries.emplace_back(ts, filename);
+    }
+    spdlog::info("Loaded {} depth frames", depth_entries.size());
+  } else {
+    spdlog::warn("No depth.txt found — running without depth");
+  }
+
+  matched_depth_paths_.resize(entries_.size());
+  if (!depth_entries.empty()) {
+    size_t di = 0;
+    for (size_t i = 0; i < entries_.size(); ++i) {
+      double t = entries_[i].first;
+      while (di + 1 < depth_entries.size() &&
+             std::abs(depth_entries[di + 1].first - t) <
+                 std::abs(depth_entries[di].first - t))
+        ++di;
+      matched_depth_paths_[i] = depth_entries[di].second;
+    }
+  }
+
   return !entries_.empty();
 }
 
 bool TUMLoader::has_next() const { return current_idx_ < entries_.size(); }
 
 Frame TUMLoader::next() {
-  const auto& [ts, rel_path] = entries_[current_idx_++];
+  size_t idx = current_idx_++;
+  const auto& [ts, rel_path] = entries_[idx];
   std::string full_path = sequence_path_ + "/" + rel_path;
 
   cv::Mat color = cv::imread(full_path, cv::IMREAD_COLOR);
   if (color.empty()) {
     spdlog::warn("Failed to read image: {}", full_path);
-    return Frame{ts, cv::Mat(), frame_counter_++};
+    return Frame{ts, cv::Mat(), cv::Mat(), frame_counter_++};
   }
 
   cv::Mat gray;
   cv::cvtColor(color, gray, cv::COLOR_BGR2GRAY);
 
-  spdlog::debug("Frame {} - ts: {:.6f} size {}x{}", frame_counter_, ts,
-                gray.cols, gray.rows);
+  cv::Mat depth;
+  if (idx < matched_depth_paths_.size() && !matched_depth_paths_[idx].empty()) {
+    std::string depth_path = sequence_path_ + "/" + matched_depth_paths_[idx];
+    cv::Mat depth_raw = cv::imread(depth_path, cv::IMREAD_UNCHANGED); // CV_16U
+    if (!depth_raw.empty())
+      depth_raw.convertTo(depth, CV_32F, 1.0 / intrinsics.depth_scale);
+    else
+      spdlog::warn("Failed to read depth image: {}", depth_path);
+  }
 
-  return Frame{ts, gray, frame_counter_++};
+  spdlog::debug("Frame {} - ts: {:.6f} size {}x{} depth:{}", frame_counter_, ts,
+                gray.cols, gray.rows, !depth.empty());
+
+  return Frame{ts, gray, depth, frame_counter_++};
 }
 
 size_t TUMLoader::size() const { return entries_.size(); }

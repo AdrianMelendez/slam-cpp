@@ -1,9 +1,11 @@
-#include "pose_estimator.hpp"
+#include "frontend/monocular_pose_estimator.hpp"
 #include "frontend/feature_detector.hpp"
+#include "pose_estimator.hpp"
 #include "spdlog/spdlog.h"
 #include <opencv2/calib3d.hpp>
 
-PoseEstimator::PoseEstimator(const TUMLoader::Intrinsics& intrinsics)
+MonocularPoseEstimator::MonocularPoseEstimator(
+    const TUMLoader::Intrinsics& intrinsics)
     : intrinsics_(intrinsics) {
   K_ = (cv::Mat_<double>(3, 3) << intrinsics_.fx, 0, intrinsics_.cx, 0,
         intrinsics_.fy, intrinsics_.cy, 0, 0, 1.0);
@@ -14,8 +16,9 @@ PoseEstimator::PoseEstimator(const TUMLoader::Intrinsics& intrinsics)
 };
 
 std::vector<cv::Point2f>
-PoseEstimator::to_points(const std::vector<cv::KeyPoint>& keypoints,
-                         const std::vector<Match>& matches, bool query) const {
+MonocularPoseEstimator::to_points(const std::vector<cv::KeyPoint>& keypoints,
+                                  const std::vector<Match>& matches,
+                                  bool query) const {
   std::vector<cv::Point2f> pts;
   pts.reserve(matches.size());
   for (const auto& m : matches) {
@@ -25,9 +28,9 @@ PoseEstimator::to_points(const std::vector<cv::KeyPoint>& keypoints,
   return pts;
 }
 
-Pose PoseEstimator::estimate(const Features& features_a,
-                             const Features& features_b,
-                             const std::vector<Match>& matches) {
+Pose MonocularPoseEstimator::estimate(const Features& features_a,
+                                      const Features& features_b,
+                                      const std::vector<Match>& matches) {
   Pose pose;
   pose.R = cv::Mat::eye(3, 3, CV_64F);
   pose.t = cv::Mat::zeros(3, 1, CV_64F);

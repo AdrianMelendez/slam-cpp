@@ -10,7 +10,8 @@ using the TUM RGB-D dataset for evaluation.
   - [x] TUM RGB-D dataset loader
   - [x] ORB feature detection
   - [x] Feature matching
-  - [ ] Pose estimation
+  - [x] Monocular pose estimation (essential matrix, up-to-scale)
+  - [x] RGB-D pose estimation (PnP, metric scale)
 - [ ] Phase 2 — Mapping
 - [ ] Phase 3 — Loop closure
 
@@ -69,6 +70,11 @@ xmake run feature_matcher $(pwd)/data/rgbd_dataset_freiburg1_xyz
 xmake run pose_viewer $(pwd)/data/rgbd_dataset_freiburg1_xyz
 ```
 ![pose viewer | 200](images/pose_viewer.png)
+```bash
+# estimate position using RGB + Depth (metric scale, no calibration needed)
+xmake run pose_viewer_rgbd $(pwd)/data/rgbd_dataset_freiburg1_xyz
+```
+![pose viewer rgbd](images/rgbd_pose_viewer.png)
 
 Press `q` to quit either viewer.
 
@@ -76,17 +82,20 @@ Press `q` to quit either viewer.
 ```
 src/
 ├── apps/
-│   ├── image_viewer.cpp      # raw image sequence player
-│   └── feature_viewer.cpp    # ORB feature detection viewer
-│   └── feature_matcher.cpp   # feature matcher
+│   ├── image_viewer.cpp         # raw image sequence player
+│   ├── feature_viewer.cpp       # ORB feature detection viewer
+│   ├── feature_matcher.cpp      # feature matching viewer
+│   ├── pose_viewer.cpp          # monocular pose estimation viewer
+│   └── pose_viewer_rgbd.cpp     # RGB-D pose estimation viewer
 ├── frontend/
-│   ├── feature_detector      # ORB keypoint and descriptor extraction
-│   ├── feature_matcher       # descriptor matching between frames (WIP)
-│   └── pose_estimator        # camera pose estimation (WIP)
+│   ├── feature_detector         # ORB keypoint and descriptor extraction
+│   ├── feature_matcher          # descriptor matching between frames
+│   ├── monocular_pose_estimator # essential matrix pose (up-to-scale)
+│   └── rgbd_pose_estimator      # PnP pose from depth backprojection (metric)
 ├── io/
-│   └── tum_loader            # TUM RGB-D dataset parser
+│   └── tum_loader               # TUM RGB-D dataset parser
 └── utils/
-    └── logger                # spdlog initialization
+    └── logger                   # spdlog initialization
 ```
 
 ## References

@@ -12,6 +12,7 @@ Features FeatureDetector::detect(const Frame& frame) {
   Features features;
   orb_->detectAndCompute(frame.image, cv::noArray(), features.keypoints,
                          features.descriptors);
+  features.depth_map = frame.depth;
   spdlog::debug("Frame {} - detected {} keypoints", frame.id,
                 features.keypoints.size());
   return features;

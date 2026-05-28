@@ -7,6 +7,7 @@
 struct Features {
   std::vector<cv::KeyPoint> keypoints;
   cv::Mat descriptors;
+  cv::Mat depth_map; // float32 meters, empty for monocular frames
 };
 
 class FeatureDetector {

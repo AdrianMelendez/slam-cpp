@@ -9,7 +9,8 @@ local shared_src = {
     "src/io/tum_loader.cpp",
     "src/frontend/feature_detector.cpp",
     "src/frontend/feature_matcher.cpp",
-    "src/frontend/pose_estimator.cpp"
+    "src/frontend/monocular_pose_estimator.cpp",
+    "src/frontend/rgbd_pose_estimator.cpp"
 }
 
 target("pose_viewer")
@@ -37,6 +38,13 @@ target("feature_matcher")
     set_kind("binary")
     set_languages("cxx17")
     add_files("src/apps/feature_matcher.cpp", table.unpack(shared_src))
+    add_includedirs("src")
+    add_packages("opencv", "spdlog")
+
+target("pose_viewer_rgbd")
+    set_kind("binary")
+    set_languages("cxx17")
+    add_files("src/apps/pose_viewer_rgbd.cpp", table.unpack(shared_src))
     add_includedirs("src")
     add_packages("opencv", "spdlog")
 
