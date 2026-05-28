@@ -13,8 +13,8 @@
 namespace {
 
 constexpr int kCanvasSize = 600;
-constexpr int kScaleInitFrames = 100; // frames used to calibrate scale
-constexpr double kMinStep = 1e-4;     // ignore tiny GT steps when calibrating
+constexpr int kScaleInitFrames = 10; // frames used to calibrate scale
+constexpr double kMinStep = 1e-4;    // ignore tiny GT steps when calibrating
 constexpr float kPixelsPerMeter = 100.0f; // canvas zoom
 
 } // namespace
