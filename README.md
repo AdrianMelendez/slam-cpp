@@ -58,7 +58,7 @@ xmake run image_viewer $(pwd)/data/rgbd_dataset_freiburg1_xyz
 # play sequence with ORB feature detection overlay
 xmake run feature_viewer $(pwd)/data/rgbd_dataset_freiburg1_xyz
 ```
-![feature viewer | 400](images/feature_viewer.png)
+![feature viewer | 300](images/feature_viewer.png)
 ```bash
 # play sequence feature matching from one frame to the next
 xmake run feature_matcher $(pwd)/data/rgbd_dataset_freiburg1_xyz
@@ -68,7 +68,7 @@ xmake run feature_matcher $(pwd)/data/rgbd_dataset_freiburg1_xyz
 # estimate position from monocular image
 xmake run pose_viewer $(pwd)/data/rgbd_dataset_freiburg1_xyz
 ```
-![pose viewer | 400](images/pose_viewer.png)
+![pose viewer | 200](images/pose_viewer.png)
 
 Press `q` to quit either viewer.
 
